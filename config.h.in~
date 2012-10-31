@@ -1,0 +1,62 @@
+/* config.h.in.  Generated automatically from configure.in by autoheader 2.13.  */
+
+/* Define if your C compiler doesn't accept -c and -o together.  */
+#undef NO_MINUS_C_MINUS_O
+
+/* Define if you have the sigaction function.  */
+#undef HAVE_SIGACTION
+
+/* Define if you have the <dlfcn.h> header file.  */
+#undef HAVE_DLFCN_H
+
+/* Define this if your target compiler supports builtin atomics */
+#undef HAVE_ATOMIC_OPERATIONS
+
+/*   */
+#undef APC_MMAP
+
+/*   */
+#undef APC_FILEHITS
+
+/*   */
+#undef __DEBUG_APC__
+
+/*   */
+#undef APC_SEM_LOCKS
+
+/*   */
+#undef APC_SPIN_LOCKS
+
+/*   */
+#undef APC_PTHREADRW_LOCKS
+
+/*   */
+#undef APC_PTHREADMUTEX_LOCKS
+
+/*   */
+#undef APC_FCNTL_LOCKS
+
+/*  shm/mmap memory protection  */
+#undef APC_MEMPROTECT
+
+/*   */
+#undef APC_HAVE_LOOKUP_HOOKS
+
+/*   */
+#undef APC_HAVE_LOOKUP_HOOKS
+
+/*   */
+#undef HAVE_SEMUN
+
+/*   */
+#undef HAVE_SEMUN
+
+/* enable valgrind memchecks */
+#undef HAVE_VALGRIND_MEMCHECK_H
+
+/* Whether to build apc as dynamic module */
+#undef COMPILE_DL_APC
+
+/*   */
+#undef HAVE_APC
+

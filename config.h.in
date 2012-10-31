@@ -1,0 +1,100 @@
+/* config.h.in.  Generated from configure.in by autoheader.  */
+
+/* */
+#undef APC_FCNTL_LOCKS
+
+/* */
+#undef APC_FILEHITS
+
+/* */
+#undef APC_HAVE_LOOKUP_HOOKS
+
+/* shm/mmap memory protection */
+#undef APC_MEMPROTECT
+
+/* */
+#undef APC_MMAP
+
+/* */
+#undef APC_PTHREADMUTEX_LOCKS
+
+/* */
+#undef APC_PTHREADRW_LOCKS
+
+/* */
+#undef APC_SEM_LOCKS
+
+/* */
+#undef APC_SPIN_LOCKS
+
+/* Whether to build apc as dynamic module */
+#undef COMPILE_DL_APC
+
+/* */
+#undef HAVE_APC
+
+/* Define this if your target compiler supports builtin atomics */
+#undef HAVE_ATOMIC_OPERATIONS
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* */
+#undef HAVE_SEMUN
+
+/* Define to 1 if you have the `sigaction' function. */
+#undef HAVE_SIGACTION
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* enable valgrind memchecks */
+#undef HAVE_VALGRIND_MEMCHECK_H
+
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+#undef NO_MINUS_C_MINUS_O
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* */
+#undef __DEBUG_APC__

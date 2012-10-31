@@ -1,0 +1,22 @@
+/home/huixinchen/opensource/pecl/apc/apc.c: In function ‘apc_search_paths’:
+/home/huixinchen/opensource/pecl/apc/apc.c:332: warning: suggest parentheses around && within ||
+/home/huixinchen/opensource/pecl/apc/apc.c:332: warning: suggest parentheses around && within ||
+/home/huixinchen/opensource/pecl/apc/apc.c:332: warning: suggest parentheses around && within ||
+/home/huixinchen/opensource/pecl/apc/apc.c:332: warning: suggest parentheses around && within ||
+/home/huixinchen/opensource/pecl/apc/apc.c:332: warning: suggest parentheses around && within ||
+/home/huixinchen/opensource/pecl/apc/apc.c:332: warning: suggest parentheses around && within ||
+/home/huixinchen/opensource/pecl/apc/apc.c:332: warning: suggest parentheses around && within ||
+/home/huixinchen/opensource/pecl/apc/apc.c:332: warning: suggest parentheses around && within ||
+/home/huixinchen/opensource/pecl/apc/apc.c:332: warning: suggest parentheses around && within ||
+/home/huixinchen/opensource/pecl/apc/apc.c:332: warning: suggest parentheses around && within ||
+/home/huixinchen/opensource/pecl/apc/apc.c:332: warning: suggest parentheses around && within ||
+/home/huixinchen/opensource/pecl/apc/apc.c:333: warning: initialization discards qualifiers from pointer target type
+/home/huixinchen/opensource/pecl/apc/apc_compile.c: In function ‘my_serialize_object’:
+/home/huixinchen/opensource/pecl/apc/apc_compile.c:245: warning: missing braces around initializer
+/home/huixinchen/opensource/pecl/apc/apc_compile.c:245: warning: (near initialization for ‘tmp.value’)
+/home/huixinchen/opensource/pecl/apc/apc_compile.c: At top level:
+/home/huixinchen/opensource/pecl/apc/apc_compile.c:310: warning: ‘hot’ attribute directive ignored
+/home/huixinchen/opensource/pecl/apc/apc_compile.c:940: warning: ‘hot’ attribute directive ignored
+/home/huixinchen/opensource/pecl/apc/apc_compile.c:883: warning: ‘my_free_hashtable’ defined but not used
+/home/huixinchen/opensource/pecl/apc/apc_sma.c:181: warning: ‘hot’ attribute directive ignored
+/home/huixinchen/opensource/pecl/apc/apc_sma.c:278: warning: ‘hot’ attribute directive ignored
