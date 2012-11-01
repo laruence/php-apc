@@ -484,7 +484,8 @@ static zend_op_array* my_compile_file(zend_file_handle* h,
     int bailout=0;
     const char* filename = NULL;
 
-    if (!APCG(enabled) || apc_cache_busy(apc_cache)) {
+    if (!APCG(enabled) || apc_cache_busy(apc_cache) || APCG(skip_cache)) {
+        APCG(skip_cache) = 1;
         return old_compile_file(h, type TSRMLS_CC);
     }
 
@@ -499,9 +500,11 @@ static zend_op_array* my_compile_file(zend_file_handle* h,
         int ret = apc_regex_match_array(APCG(compiled_filters), filename);
 
         if(ret == APC_NEGATIVE_MATCH || (ret != APC_POSITIVE_MATCH && !APCG(cache_by_default))) {
+            APCG(skip_cache) = 1;
             return old_compile_file(h, type TSRMLS_CC);
         }
     } else if(!APCG(cache_by_default)) {
+        APCG(skip_cache) = 1;
         return old_compile_file(h, type TSRMLS_CC);
     }
     APCG(current_cache) = apc_cache;
@@ -532,6 +535,7 @@ static zend_op_array* my_compile_file(zend_file_handle* h,
                                                 apc_sma_protect, apc_sma_unprotect TSRMLS_CC);
         if (!ctxt.pool) {
             apc_warning("Unable to allocate memory for pool." TSRMLS_CC);
+            APCG(skip_cache) = 1;
             return old_compile_file(h, type TSRMLS_CC);
         }
         ctxt.copy = APC_COPY_OUT_OPCODE;
@@ -581,11 +585,13 @@ static zend_op_array* my_compile_file(zend_file_handle* h,
         } else {
             if (apc_search_paths(h->filename, PG(include_path), &fileinfo TSRMLS_CC) != 0) {
                 apc_debug("Stat failed %s - bailing (%s) (%d)\n" TSRMLS_CC,h->filename,SG(request_info).path_translated);
+                APCG(skip_cache) = 1;
                 return old_compile_file(h, type TSRMLS_CC);
             }
         }
         if (APCG(max_file_size) < fileinfo.st_buf.sb.st_size) { 
             apc_debug("File is too big %s (%ld) - bailing\n" TSRMLS_CC, h->filename, fileinfo.st_buf.sb.st_size);
+            APCG(skip_cache) = 1;
             return old_compile_file(h, type TSRMLS_CC);
         }
         key.mtime = fileinfo.st_buf.sb.st_mtime;
@@ -596,6 +602,7 @@ static zend_op_array* my_compile_file(zend_file_handle* h,
 #if NONBLOCKING_LOCK_AVAILABLE
     if(APCG(write_lock)) {
         if(!apc_cache_write_lock(apc_cache TSRMLS_CC)) {
+            APCG(skip_cache) = 1;
             HANDLE_UNBLOCK_INTERRUPTIONS();
             return old_compile_file(h, type TSRMLS_CC);
         }

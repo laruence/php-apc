@@ -395,6 +395,7 @@ static PHP_RINIT_FUNCTION(apc)
 #if HAVE_SIGACTION
         apc_set_signals(TSRMLS_C);
 #endif
+        APCG(skip_cache) = 0;
     }
     return SUCCESS;
 }

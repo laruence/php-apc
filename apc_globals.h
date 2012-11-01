@@ -124,6 +124,7 @@ ZEND_BEGIN_MODULE_GLOBALS(apc)
 #endif
     char *serializer_name;       /* the serializer config option */
     apc_serializer_t *serializer;/* the actual serializer in use */
+    zend_bool skip_cache;        /* if error occurred, skip caching for this request lifecycle */
 ZEND_END_MODULE_GLOBALS(apc)
 
 /* (the following declaration is defined in php_apc.c) */
