@@ -1,5 +1,0 @@
-031+ Warning: Wrong parameter count for get_included_files() in /home/huixinchen/opensource/pecl/apc/tests/get_included_files.php on line 21
-031- Warning: get_included_files() expects exactly 0 parameters, 1 given in %s on line %d
-034+ [Thu Sep  6 18:11:27 2012]  Script:  '/home/huixinchen/opensource/pecl/apc/tests/get_included_files.php'
-035+ /home/huixinchen/opensource/pecl/apc/apc_zend.c(38) :  Freeing 0x12030968 (4 bytes), script=/home/huixinchen/opensource/pecl/apc/tests/get_included_files.php
-036+ === Total 1 memory leaks detected ===

@@ -1,4 +1,0 @@
-11251+ [Thu Sep  6 18:11:25 2012]  Script:  '/home/huixinchen/opensource/pecl/apc/tests/024.php'
-11252+ /home/huixinchen/opensource/pecl/apc/apc_zend.c(38) :  Freeing 0x1A4F0CD0 (4 bytes), script=/home/huixinchen/opensource/pecl/apc/tests/024.php
-11253+ Last leak repeated 48 times
-11254+ === Total 49 memory leaks detected ===
