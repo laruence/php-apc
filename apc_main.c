@@ -484,7 +484,7 @@ static zend_op_array* my_compile_file(zend_file_handle* h,
     int bailout=0;
     const char* filename = NULL;
 
-    if (!APCG(enabled) || apc_cache_busy(apc_cache) || APCG(skip_cache)) {
+    if (!APCG(enabled) || apc_cache_busy(apc_cache)) {
         APCG(skip_cache) = 1;
         return old_compile_file(h, type TSRMLS_CC);
     }
@@ -500,7 +500,6 @@ static zend_op_array* my_compile_file(zend_file_handle* h,
         int ret = apc_regex_match_array(APCG(compiled_filters), filename);
 
         if(ret == APC_NEGATIVE_MATCH || (ret != APC_POSITIVE_MATCH && !APCG(cache_by_default))) {
-            APCG(skip_cache) = 1;
             return old_compile_file(h, type TSRMLS_CC);
         }
     } else if(!APCG(cache_by_default)) {
@@ -509,13 +508,13 @@ static zend_op_array* my_compile_file(zend_file_handle* h,
     }
     APCG(current_cache) = apc_cache;
 
-
     t = apc_time();
 
     apc_debug("1. h->opened_path=[%s]  h->filename=[%s]\n" TSRMLS_CC, h->opened_path?h->opened_path:"null",h->filename);
 
     /* try to create a cache key; if we fail, give up on caching */
     if (!apc_cache_make_file_key(&key, h->filename, PG(include_path), t TSRMLS_CC)) {
+        APCG(skip_cache) = 1;
         return old_compile_file(h, type TSRMLS_CC);
     }
 
@@ -595,6 +594,10 @@ static zend_op_array* my_compile_file(zend_file_handle* h,
             return old_compile_file(h, type TSRMLS_CC);
         }
         key.mtime = fileinfo.st_buf.sb.st_mtime;
+    }
+
+    if (APCG(skip_cache)) {
+        return old_compile_file(h, type TSRMLS_CC);
     }
 
     HANDLE_BLOCK_INTERRUPTIONS();
