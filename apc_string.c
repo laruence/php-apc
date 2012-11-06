@@ -25,7 +25,7 @@
 
  */
 
-/* $Id: apc_string.c 327244 2012-08-23 09:08:12Z ab $ */
+/* $Id: apc_string.c 328241 2012-11-05 06:44:47Z laruence $ */
 
 #include "apc.h"
 #include "apc_globals.h"
@@ -73,6 +73,10 @@ const char *apc_new_interned_string(const char *arKey, int nKeyLength TSRMLS_DC)
     ulong h;
     uint nIndex;
     Bucket *p;
+
+    if (!apc_interned_strings_data) {
+        return NULL;
+    }
 
     if (arKey >= APCSG(interned_strings_start) && arKey < APCSG(interned_strings_end)) {
         return arKey;
@@ -203,35 +207,39 @@ static void apc_copy_internal_strings(TSRMLS_D)
 
 void apc_interned_strings_init(TSRMLS_D)
 {
-    int count = APCG(shm_strings_buffer) / (sizeof(Bucket) + sizeof(Bucket*) * 2);
+    if (APCG(shm_strings_buffer) < APCG(shm_size)) {
+        int count = APCG(shm_strings_buffer) / (sizeof(Bucket) + sizeof(Bucket*) * 2);
 
-    apc_interned_strings_data = (apc_interned_strings_data_t*) apc_sma_malloc(APCG(shm_strings_buffer) TSRMLS_CC);
-    if (apc_interned_strings_data) {
-        memset((void *)apc_interned_strings_data, 0, APCG(shm_strings_buffer));
+        apc_interned_strings_data = (apc_interned_strings_data_t*) apc_sma_malloc(APCG(shm_strings_buffer) TSRMLS_CC);
+        if (apc_interned_strings_data) {
+            memset((void *)apc_interned_strings_data, 0, APCG(shm_strings_buffer));
 
-        CREATE_LOCK(APCSG(lock));
+            CREATE_LOCK(APCSG(lock));
 
-        zend_hash_init(&APCSG(interned_strings), count, NULL, NULL, 1);
-        APCSG(interned_strings).nTableMask = APCSG(interned_strings).nTableSize - 1;
-        APCSG(interned_strings).arBuckets = (Bucket**)((char*)apc_interned_strings_data + sizeof(apc_interned_strings_data_t));
+            zend_hash_init(&APCSG(interned_strings), count, NULL, NULL, 1);
+            APCSG(interned_strings).nTableMask = APCSG(interned_strings).nTableSize - 1;
+            APCSG(interned_strings).arBuckets = (Bucket**)((char*)apc_interned_strings_data + sizeof(apc_interned_strings_data_t));
 
-        APCSG(interned_strings_start) = (char*)APCSG(interned_strings).arBuckets + APCSG(interned_strings).nTableSize * sizeof(Bucket *);
-        APCSG(interned_strings_end)   = (char*)apc_interned_strings_data + APCG(shm_strings_buffer);
-        APCSG(interned_strings_top)   = APCSG(interned_strings_start);
+            APCSG(interned_strings_start) = (char*)APCSG(interned_strings).arBuckets + APCSG(interned_strings).nTableSize * sizeof(Bucket *);
+            APCSG(interned_strings_end)   = (char*)apc_interned_strings_data + APCG(shm_strings_buffer);
+            APCSG(interned_strings_top)   = APCSG(interned_strings_start);
 
-        old_interned_strings_start = CG(interned_strings_start);
-        old_interned_strings_end = CG(interned_strings_end);
-        old_new_interned_string = zend_new_interned_string;
-        old_interned_strings_snapshot = zend_interned_strings_snapshot;
-        old_interned_strings_restore = zend_interned_strings_restore;
+            old_interned_strings_start = CG(interned_strings_start);
+            old_interned_strings_end = CG(interned_strings_end);
+            old_new_interned_string = zend_new_interned_string;
+            old_interned_strings_snapshot = zend_interned_strings_snapshot;
+            old_interned_strings_restore = zend_interned_strings_restore;
 
-        CG(interned_strings_start) = APCSG(interned_strings_start);
-        CG(interned_strings_end) = APCSG(interned_strings_end);
-        zend_new_interned_string = apc_dummy_new_interned_string_for_php;
-        zend_interned_strings_snapshot = apc_dummy_interned_strings_snapshot_for_php;
-        zend_interned_strings_restore = apc_dummy_interned_strings_restore_for_php;
+            CG(interned_strings_start) = APCSG(interned_strings_start);
+            CG(interned_strings_end) = APCSG(interned_strings_end);
+            zend_new_interned_string = apc_dummy_new_interned_string_for_php;
+            zend_interned_strings_snapshot = apc_dummy_interned_strings_snapshot_for_php;
+            zend_interned_strings_restore = apc_dummy_interned_strings_restore_for_php;
 
-        apc_copy_internal_strings(TSRMLS_C);
+            apc_copy_internal_strings(TSRMLS_C);
+        } 
+    } else {
+        php_error_docref(NULL TSRMLS_CC, E_WARNING, "apc.shm_strings_buffer '%ld' exceed apc.shm_size '%ld'", APCG(shm_strings_buffer), APCG(shm_size));
     }
 }
 
