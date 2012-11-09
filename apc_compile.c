@@ -1452,7 +1452,7 @@ apc_function_t* apc_copy_new_functions(int old_count, apc_context_t* ctxt TSRMLS
     int new_count;              /* number of new functions in table */
     int i;
     apc_pool* pool = ctxt->pool;
-
+    
     new_count = zend_hash_num_elements(CG(function_table)) - old_count;
     assert(new_count >= 0);
 
@@ -1493,6 +1493,47 @@ apc_function_t* apc_copy_new_functions(int old_count, apc_context_t* ctxt TSRMLS
     }
 
     array[i].function = NULL;
+    return array;
+}
+/* }}} */
+
+/* {{{ apc_copy_modified_functions */
+apc_function_t * apc_copy_modified_functions(HashTable *funcs, apc_function_t *alloc_functions, int num_functions, apc_context_t *ctxt TSRMLS_DC) {
+    HashPosition pos;
+    zend_function *func;
+    apc_function_t *array;
+    int modified_count = zend_hash_num_elements(funcs);
+    int index = zend_hash_num_elements(CG(function_table)) - num_functions;
+
+    CHECK(array = (apc_function_t*) apc_pool_alloc(ctxt->pool, (sizeof(apc_function_t) * (index + modified_count + 1))));
+    memcpy(array, alloc_functions, (sizeof(apc_function_t) * (index + 1)));
+
+    zend_hash_internal_pointer_reset_ex(CG(function_table), &pos);
+    while (zend_hash_get_current_data_ex(CG(function_table), (void **)&func, &pos) == SUCCESS) {
+        if (func->type == ZEND_USER_FUNCTION) {
+            char* key;
+            uint key_size;
+            HashPosition nPos;
+            zend_function *modified_func;
+
+            zend_hash_internal_pointer_reset_ex(funcs, &nPos);
+            while (zend_hash_get_current_data_ex(funcs, (void **)&modified_func, &nPos) == SUCCESS) {
+                /* there might be some functions share the same name */
+                if (modified_func->op_array.line_start == func->op_array.line_start
+                       && strcmp(modified_func->op_array.function_name, func->op_array.function_name) == 0) {
+                    zend_hash_get_current_key_ex(CG(function_table), &key, &key_size, NULL, 0, &pos);
+                    CHECK(array[index].name = apc_pmemcpy(key, (int) key_size, ctxt->pool TSRMLS_CC));
+                    array[index].name_len = (int) key_size-1;
+                    CHECK(array[index].function = my_copy_function(NULL, func, ctxt TSRMLS_CC));
+                    index++;
+                    break;
+                }
+                zend_hash_move_forward_ex(funcs, &nPos);
+            }
+        }
+        zend_hash_move_forward_ex(CG(function_table), &pos);
+    }
+    array[index].function = NULL;
     return array;
 }
 /* }}} */
@@ -1566,6 +1607,54 @@ apc_class_t* apc_copy_new_classes(zend_op_array* op_array, int old_count, apc_co
     }
 
     array[i].class_entry = NULL;
+    return array;
+}
+/* }}} */
+
+/* {{{ apc_copy_modified_classes */
+apc_class_t * apc_copy_modified_classes(HashTable *classes, apc_class_t *alloc_classes, int num_classes, apc_context_t *ctxt TSRMLS_DC) {
+    HashPosition pos;
+    apc_class_t *array;
+    zend_class_entry **pce;
+    int modified_count = zend_hash_num_elements(classes);
+    int index = zend_hash_num_elements(CG(class_table)) - num_classes;
+
+    CHECK(array = (apc_class_t*) apc_pool_alloc(ctxt->pool, (sizeof(apc_class_t) * (index + modified_count + 1))));
+    memcpy(array, alloc_classes, (sizeof(apc_class_t) * (index + 1)));
+
+    zend_hash_internal_pointer_reset_ex(CG(class_table), &pos);
+    while (zend_hash_get_current_data_ex(CG(class_table), (void **)&pce, &pos) == SUCCESS) {
+        if ((*pce)->type == ZEND_USER_CLASS) {
+            char* key;
+            uint key_size;
+            HashPosition nPos;
+            zend_class_entry **modified_ce;
+
+            zend_hash_internal_pointer_reset_ex(classes, &nPos);
+            while (zend_hash_get_current_data_ex(classes, (void **)&modified_ce, &nPos) == SUCCESS) {
+                if (strncmp((*modified_ce)->name, (*pce)->name, (*pce)->name_length) == 0) {
+                    zend_hash_get_current_key_ex(CG(class_table), &key, &key_size, NULL, 0, &pos);
+                    /* only the compile-time class declaration is cared */
+                    if (key[0] != '\0') {
+                        break;
+                    }
+                    CHECK(array[index].name = apc_pmemcpy(key, (int) key_size, ctxt->pool TSRMLS_CC));
+                    array[index].name_len = (int) key_size-1;
+                    CHECK(array[index].class_entry = my_copy_class_entry(NULL, *pce, ctxt TSRMLS_CC));
+                    if ((*pce)->parent) {
+                        CHECK(array[index].parent_name = apc_pstrdup((*pce)->parent->name, ctxt->pool TSRMLS_CC));
+                    } else {
+                        array[index].parent_name = NULL;
+                    }
+                    index++;
+                    break;
+                }
+                zend_hash_move_forward_ex(classes, &nPos);
+            }
+        }
+        zend_hash_move_forward_ex(CG(class_table), &pos);
+    }
+    array[index].class_entry = NULL;
     return array;
 }
 /* }}} */

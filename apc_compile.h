@@ -91,7 +91,9 @@ struct apc_opflags_t {
 extern zend_op_array* apc_copy_op_array(zend_op_array* dst, zend_op_array* src, apc_context_t* ctxt TSRMLS_DC);
 extern zend_class_entry* apc_copy_class_entry(zend_class_entry* dst, zend_class_entry* src, apc_context_t* ctxt TSRMLS_DC);
 extern apc_function_t* apc_copy_new_functions(int old_count, apc_context_t* ctxt TSRMLS_DC);
+extern apc_function_t* apc_copy_modified_functions(HashTable *funcs, apc_function_t *alloc_functions, int num_functions, apc_context_t *ctxt TSRMLS_DC);
 extern apc_class_t* apc_copy_new_classes(zend_op_array* op_array, int old_count, apc_context_t* ctxt TSRMLS_DC);
+extern apc_class_t* apc_copy_modified_classes(HashTable *classes, apc_class_t *alloc_classes, int num_classes, apc_context_t *ctxt TSRMLS_DC);
 extern zval* apc_copy_zval(zval* dst, const zval* src, apc_context_t* ctxt TSRMLS_DC);
 #ifdef ZEND_ENGINE_2_4
 extern zend_trait_alias* apc_copy_trait_alias(zend_trait_alias *dst, zend_trait_alias *src, apc_context_t *ctxt TSRMLS_DC);

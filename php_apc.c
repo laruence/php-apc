@@ -109,6 +109,9 @@ static void php_apc_init_globals(zend_apc_globals* apc_globals TSRMLS_DC)
     apc_globals->lazy_function_table = NULL;
     apc_globals->serializer_name = NULL;
     apc_globals->serializer = NULL;
+    apc_globals->compiler_hook_func_table = NULL;
+    apc_globals->compiler_hook_class_table = NULL;
+    apc_globals->compile_nesting = 0;
 }
 
 static void php_apc_shutdown_globals(zend_apc_globals* apc_globals TSRMLS_DC)

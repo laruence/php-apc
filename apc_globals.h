@@ -124,6 +124,9 @@ ZEND_BEGIN_MODULE_GLOBALS(apc)
 #endif
     char *serializer_name;       /* the serializer config option */
     apc_serializer_t *serializer;/* the actual serializer in use */
+    HashTable *compiler_hook_func_table;
+    HashTable *compiler_hook_class_table;
+    int compile_nesting;
 ZEND_END_MODULE_GLOBALS(apc)
 
 /* (the following declaration is defined in php_apc.c) */
