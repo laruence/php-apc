@@ -3,13 +3,13 @@
 define ("PHP_CLI_SERVER_HOSTNAME", "localhost");
 define ("PHP_CLI_SERVER_PORT", 8964);
 define ("PHP_CLI_SERVER_ADDRESS", PHP_CLI_SERVER_HOSTNAME.":".PHP_CLI_SERVER_PORT);
-define ("NUM_SERVERS", 3);
 
 /* XXX incapsulate all this globals into a class when have a favourable minute */
 $doc_root = __DIR__;
 $router = "index.php";
 $handles = array();
 $ports = array();
+$num_servers = 3;
 
 function server_start_one($host, $port, $code = 'echo "Hello world";', $php_opts = array(), $no_router = FALSE)
 {
@@ -61,14 +61,14 @@ function server_start_one($host, $port, $code = 'echo "Hello world";', $php_opts
 
 function server_start($code = 'echo "Hello world";', $php_opts = array(), $no_router = FALSE)
 {
-	global $doc_root, $router, $handles, $ports;
+	global $doc_root, $router, $handles, $ports, $num_servers;
 
 
 	if ($code) {
 		file_put_contents($doc_root . '/' . $router, '<?php ' . $code . ' ?>');
 	}
 
-	for ($i = 0; $i < NUM_SERVERS; $i++) {
+	for ($i = 0; $i < $num_servers; $i++) {
 		$h = server_start_one(PHP_CLI_SERVER_HOSTNAME, PHP_CLI_SERVER_PORT+$i, $code, $php_opts, $no_router);
 		$handles[] = $h;
 	}	
@@ -129,11 +129,12 @@ function connection_test($host, $port)
 	return false;
 }
 
-function run_test_simple()
+function run_test_simple($request_uri = NULL)
 {
-	$send = "GET / HTTP/1.1\nHost: " . PHP_CLI_SERVER_HOSTNAME . "\r\n\r\n";
+    global $num_servers;
+	$send = "GET /" . $request_uri ." HTTP/1.1\nHost: " . PHP_CLI_SERVER_HOSTNAME . "\r\n\r\n";
 
-	for ($i = 0; $i < NUM_SERVERS; $i++) {
+	for ($i = 0; $i < $num_servers; $i++) {
 		run_test(PHP_CLI_SERVER_HOSTNAME, PHP_CLI_SERVER_PORT+$i, $send);
 	}
 }

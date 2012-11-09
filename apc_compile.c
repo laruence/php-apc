@@ -28,7 +28,7 @@
 
  */
 
-/* $Id: apc_compile.c 328140 2012-10-25 11:43:53Z gopalv $ */
+/* $Id: apc_compile.c 328290 2012-11-09 03:30:09Z laruence $ */
 
 #include "apc_compile.h"
 #include "apc_globals.h"
@@ -1452,7 +1452,7 @@ apc_function_t* apc_copy_new_functions(int old_count, apc_context_t* ctxt TSRMLS
     int new_count;              /* number of new functions in table */
     int i;
     apc_pool* pool = ctxt->pool;
-    
+
     new_count = zend_hash_num_elements(CG(function_table)) - old_count;
     assert(new_count >= 0);
 

@@ -26,7 +26,7 @@
 
  */
 
-/* $Id: php_apc.c 327136 2012-08-15 16:41:18Z laruence $ */
+/* $Id: php_apc.c 328290 2012-11-09 03:30:09Z laruence $ */
 
 #include "apc_zend.h"
 #include "apc_cache.h"
@@ -320,7 +320,7 @@ static PHP_MINFO_FUNCTION(apc)
         php_info_print_table_row(2, "Serialization Support", "broken");
     }
 
-    php_info_print_table_row(2, "Revision", "$Revision: 327136 $");
+    php_info_print_table_row(2, "Revision", "$Revision: 328290 $");
     php_info_print_table_row(2, "Build Date", __DATE__ " " __TIME__);
     php_info_print_table_end();
     DISPLAY_INI_ENTRIES();

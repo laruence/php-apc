@@ -29,7 +29,7 @@
 
  */
 
-/* $Id: apc_globals.h 307215 2011-01-07 09:54:00Z gopalv $ */
+/* $Id: apc_globals.h 328290 2012-11-09 03:30:09Z laruence $ */
 
 #ifndef APC_GLOBALS_H
 #define APC_GLOBALS_H

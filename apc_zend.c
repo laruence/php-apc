@@ -25,7 +25,7 @@
 
  */
 
-/* $Id: apc_zend.c 328172 2012-10-28 21:44:47Z rasmus $ */
+/* $Id: apc_zend.c 328264 2012-11-06 19:30:39Z ab $ */
 
 #include "apc_zend.h"
 #include "apc_globals.h"
@@ -172,7 +172,7 @@ static int ZEND_FASTCALL apc_op_ZEND_INCLUDE_OR_EVAL(ZEND_OPCODE_HANDLER_ARGS)
     file_handle.type = ZEND_HANDLE_FILENAME;
     file_handle.opened_path = NULL;
     file_handle.handle.fp = NULL;
-    cache_entry = apc_get_cache_entry(&file_handle);
+    cache_entry = apc_get_cache_entry(&file_handle TSRMLS_CC);
     if (cache_entry) {
         realpath = cache_entry->data.file.filename;
     } else {

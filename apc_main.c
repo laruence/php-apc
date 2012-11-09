@@ -28,7 +28,7 @@
 
  */
 
-/* $Id: apc_main.c 328172 2012-10-28 21:44:47Z rasmus $ */
+/* $Id: apc_main.c 328290 2012-11-09 03:30:09Z laruence $ */
 
 #include "apc_php.h"
 #include "apc_main.h"
@@ -405,7 +405,7 @@ void apc_compiler_class_table_dtor_hook(void *pDest) {
 
 /* {{{ apc_compile_cache_entry  */
 zend_bool apc_compile_cache_entry(apc_cache_key_t *key, zend_file_handle* h, int type, time_t t, zend_op_array** op_array, apc_cache_entry_t** cache_entry TSRMLS_DC) {
-    int num_functions, num_classes, modified_functions, modified_classes;
+    int num_functions, num_classes;
     apc_function_t* alloc_functions;
     zend_op_array* alloc_op_array;
     apc_class_t* alloc_classes;
