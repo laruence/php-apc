@@ -17,8 +17,11 @@ $files = array( 'apc_009.php',
                 'nofile.php',
               );
 
-file_put_contents(dirname(__FILE__).'/apc_009-1.php', '<?php echo "test file";');
-file_put_contents(dirname(__FILE__).'/apc_009-2.php', '<?php syntaxerrorhere!');
+$olddir = getcwd();
+chdir(__DIR__);
+
+file_put_contents(__DIR__ . '/apc_009-1.php', '<?php echo "test file";');
+file_put_contents(__DIR__ . '/apc_009-2.php', '<?php syntaxerrorhere!');
 
 apc_compile_file($files[0]);
 check_file($files[0]);
@@ -60,7 +63,7 @@ function check_file($files) {
     }
   }
 }
-
+chdir($olddir);
 ?>
 ===DONE===
 <?php exit(0); ?>
@@ -81,9 +84,9 @@ apc_009-1.php Found File
 
 Parse error: syntax error, unexpected '!' in %s/apc_009-2.php on line 1
 
-Warning: apc_compile_file(): Error compiling apc_009-2.php in apc_compile_file. in %s/apc_009.php on line 29
+Warning: apc_compile_file(): Error compiling apc_009-2.php in apc_compile_file. in %s/apc_009.php on line 32
 
-Warning: apc_compile_file(): Error compiling nofile.php in apc_compile_file. in %s/apc_009.php on line 29
+Warning: apc_compile_file(): Error compiling nofile.php in apc_compile_file. in %s/apc_009.php on line 32
 array(2) {
   ["apc_009-2.php"]=>
   int(-1)

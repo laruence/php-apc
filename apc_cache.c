@@ -28,7 +28,7 @@
 
  */
 
-/* $Id: apc_cache.c 327066 2012-08-12 07:48:48Z laruence $ */
+/* $Id: apc_cache.c 328743 2012-12-12 07:58:32Z ab $ */
 
 #include "apc_cache.h"
 #include "apc_zend.h"
@@ -945,12 +945,14 @@ int apc_cache_make_file_key(apc_cache_key_t* key,
         goto cleanup;
     }
 
+    memset(key->md5, 0, 16);
+
     len = strlen(filename);
     if(APCG(fpstat)==0) {
         if(IS_ABSOLUTE_PATH(filename,len) || strstr(filename, "://")) {
             key->data.fpfile.fullpath = filename;
             key->data.fpfile.fullpath_len = len;
-            key->h = string_nhash_8(key->data.fpfile.fullpath, key->data.fpfile.fullpath_len);
+            key->h = string_nhash_8((char *)key->data.fpfile.fullpath, key->data.fpfile.fullpath_len);
             key->mtime = t;
             key->type = APC_CACHE_KEY_FPFILE;
             goto success;
@@ -970,7 +972,7 @@ int apc_cache_make_file_key(apc_cache_key_t* key,
 
             key->data.fpfile.fullpath = APCG(canon_path);
             key->data.fpfile.fullpath_len = strlen(APCG(canon_path));
-            key->h = string_nhash_8(key->data.fpfile.fullpath, key->data.fpfile.fullpath_len);
+            key->h = string_nhash_8((char *)key->data.fpfile.fullpath, key->data.fpfile.fullpath_len);
             key->mtime = t;
             key->type = APC_CACHE_KEY_FPFILE;
             goto success;
@@ -1067,7 +1069,7 @@ int apc_cache_make_user_key(apc_cache_key_t* key, char* identifier, int identifi
 
     key->data.user.identifier = identifier;
     key->data.user.identifier_len = identifier_len;
-    key->h = string_nhash_8(key->data.user.identifier, key->data.user.identifier_len);
+    key->h = string_nhash_8((char *)key->data.user.identifier, key->data.user.identifier_len);
     key->mtime = t;
     key->type = APC_CACHE_KEY_USER;
     return 1;

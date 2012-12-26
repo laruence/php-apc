@@ -17,7 +17,7 @@
 
  */
 
-/* $Id: apc_bin.h 307048 2011-01-03 23:53:17Z kalle $ */
+/* $Id: apc_bin.h 328743 2012-12-12 07:58:32Z ab $ */
 
 #ifndef APC_BINDUMP_H
 #define APC_BINDUMP_H
@@ -35,6 +35,7 @@ typedef struct _apc_bd_entry_t {
     uint num_functions;
     uint num_classes;
     apc_cache_entry_value_t val;
+    unsigned char file_md5[16]; /* only sensible for file entries */
 } apc_bd_entry_t;
 
 typedef struct _apc_bd_t {

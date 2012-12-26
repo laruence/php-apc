@@ -28,7 +28,7 @@
 
  */
 
-/* $Id: apc_main.c 328290 2012-11-09 03:30:09Z laruence $ */
+/* $Id: apc_main.c 328826 2012-12-18 15:10:25Z remi $ */
 
 #include "apc_php.h"
 #include "apc_main.h"
@@ -369,7 +369,6 @@ void apc_compiler_func_table_dtor_hook(void *pDest) {
         function_add_ref(func);
         zend_hash_next_index_insert(APCG(compiler_hook_func_table), func, sizeof(zend_function), NULL);
     } 
-    return zend_function_dtor(func);
 }
 /* }}} */
 
@@ -382,7 +381,6 @@ void apc_compiler_class_table_dtor_hook(void *pDest) {
         ++(*pce)->refcount;
         zend_hash_next_index_insert(APCG(compiler_hook_class_table), pce, sizeof(zend_class_entry *), NULL);
     }
-    return destroy_zend_class(pce);
 }
 /* }}} */
 
@@ -468,7 +466,7 @@ zend_bool apc_compile_cache_entry(apc_cache_key_t *key, zend_file_handle* h, int
         if(h->opened_path) {
             filename = h->opened_path;
         } else {
-            filename = h->filename;
+            filename = (char *)h->filename;
         }
         stream = php_stream_open_wrapper(filename, "rb", REPORT_ERRORS | ENFORCE_SAFE_MODE, NULL);
         if(stream) {
@@ -510,8 +508,12 @@ zend_bool apc_compile_cache_entry(apc_cache_key_t *key, zend_file_handle* h, int
     }
 
     path = h->opened_path;
-    if(!path && key->type == APC_CACHE_KEY_FPFILE) path = (char*)key->data.fpfile.fullpath;
-    if(!path) path=h->filename;
+    if (!path && key->type == APC_CACHE_KEY_FPFILE) {
+        path = (char*)key->data.fpfile.fullpath;
+    }
+    if (!path) {
+        path = (char *)h->filename;
+    }
 
     apc_debug("2. h->opened_path=[%s]  h->filename=[%s]\n" TSRMLS_CC, h->opened_path?h->opened_path:"null",h->filename);
 
@@ -790,6 +792,7 @@ static int apc_load_data(const char *data_file TSRMLS_DC)
     return 0;
 }
 
+#ifndef ZTS
 static int apc_walk_dir(const char *path TSRMLS_DC)
 {
     char file[MAXPATHLEN]={0,};
@@ -821,6 +824,7 @@ static int apc_walk_dir(const char *path TSRMLS_DC)
 
     return 1;
 }
+#endif
 
 void apc_data_preload(TSRMLS_D)
 {
@@ -850,7 +854,9 @@ static int _apc_register_serializer(const char* name, apc_serialize_t serialize,
             serializer->serialize = serialize;
             serializer->unserialize = unserialize;
             serializer->config = config;
-            apc_serializers[i+1].name = NULL;
+            if (i < APC_MAX_SERIALIZERS - 1) {
+                apc_serializers[i+1].name = NULL;
+            }
             return 1;
         }
     }

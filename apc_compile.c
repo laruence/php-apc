@@ -28,7 +28,7 @@
 
  */
 
-/* $Id: apc_compile.c 328290 2012-11-09 03:30:09Z laruence $ */
+/* $Id: apc_compile.c 328293 2012-11-09 07:07:13Z laruence $ */
 
 #include "apc_compile.h"
 #include "apc_globals.h"
@@ -2140,7 +2140,7 @@ long apc_file_halt_offset(const char *filename TSRMLS_DC)
     char haltoff[] = "__COMPILER_HALT_OFFSET__";
     long value = -1;
 
-    zend_mangle_property_name(&name, &len, haltoff, sizeof(haltoff) - 1, filename, strlen(filename), 0);
+    zend_mangle_property_name(&name, &len, haltoff, sizeof(haltoff) - 1, (char *)filename, strlen(filename), 0);
     
     if (zend_hash_find(EG(zend_constants), name, len+1, (void **) &c) == SUCCESS) {
         value = Z_LVAL(c->value);
@@ -2162,7 +2162,7 @@ void apc_do_halt_compiler_register(const char *filename, long halt_offset TSRMLS
     if(halt_offset > 0) {
         
         zend_mangle_property_name(&name, &len, haltoff, sizeof(haltoff) - 1, 
-                                    filename, strlen(filename), 0);
+                                    (char *)filename, strlen(filename), 0);
         
         zend_register_long_constant(name, len+1, halt_offset, CONST_CS, 0 TSRMLS_CC);
 

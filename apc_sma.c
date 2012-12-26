@@ -26,7 +26,7 @@
 
  */
 
-/* $Id: apc_sma.c 327066 2012-08-12 07:48:48Z laruence $ */
+/* $Id: apc_sma.c 328896 2012-12-26 05:28:14Z laruence $ */
 
 #include "apc_sma.h"
 #include "apc.h"
@@ -394,7 +394,7 @@ void apc_sma_init(int numseg, size_t segsize, char *mmap_file_mask TSRMLS_DC)
         first->prev_size = 0;
         SET_CANARY(first);
 #ifdef __APC_SMA_DEBUG__
-        block->id = -1;
+        first->id = -1;
 #endif
         empty = BLOCKAT(first->fnext);
         empty->size = header->avail - ALIGNWORD(sizeof(block_t));
@@ -548,7 +548,6 @@ void apc_sma_free(void* p TSRMLS_DC)
 {
     uint i;
     size_t offset;
-    size_t d_size;
 
     if (p == NULL) {
         return;
@@ -561,7 +560,7 @@ void apc_sma_free(void* p TSRMLS_DC)
         offset = (size_t)((char *)p - SMA_ADDR(i));
         if (p >= (void*)SMA_ADDR(i) && offset < sma_segsize) {
             LOCK(SMA_LCK(i));
-            d_size = sma_deallocate(SMA_HDR(i), offset);
+            sma_deallocate(SMA_HDR(i), offset);
             UNLOCK(SMA_LCK(i));
 #ifdef VALGRIND_FREELIKE_BLOCK
             VALGRIND_FREELIKE_BLOCK(p, 0);

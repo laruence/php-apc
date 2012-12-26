@@ -29,7 +29,7 @@
 
  */
 
-/* $Id: apc_php.h 313808 2011-07-28 06:17:10Z gopalv $ */
+/* $Id: apc_php.h 328674 2012-12-05 09:58:27Z ab $ */
 
 #ifndef APC_PHP_H
 #define APC_PHP_H
@@ -47,6 +47,9 @@
 #include "zend_hash.h"
 #include "zend_extensions.h"
 
+#if ZEND_MODULE_API_NO >= 20121204
+#define ZEND_ENGINE_2_5
+#endif
 #if ZEND_MODULE_API_NO >= 20100409
 #define ZEND_ENGINE_2_4
 #endif

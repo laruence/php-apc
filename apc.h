@@ -29,7 +29,7 @@
 
  */
 
-/* $Id: apc.h 327146 2012-08-16 10:57:33Z ab $ */
+/* $Id: apc.h 328292 2012-11-09 07:05:17Z laruence $ */
 
 #ifndef APC_H
 #define APC_H
@@ -116,7 +116,11 @@ extern HashTable* apc_flip_hash(HashTable *hash);
 # define APC_UNUSED __attribute__((unused))
 # define APC_USED __attribute__((used))
 # define APC_ALLOC __attribute__((malloc))
-# define APC_HOTSPOT __attribute__((hot))
+# if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__  > 2)
+#  define APC_HOTSPOT __attribute__((hot))
+# else 
+#  define APC_HOTSPOT
+# endif
 #else 
 # define APC_UNUSED
 # define APC_USED

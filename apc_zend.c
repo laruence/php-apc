@@ -25,7 +25,7 @@
 
  */
 
-/* $Id: apc_zend.c 328264 2012-11-06 19:30:39Z ab $ */
+/* $Id: apc_zend.c 328675 2012-12-05 10:59:38Z ab $ */
 
 #include "apc_zend.h"
 #include "apc_globals.h"
@@ -48,7 +48,13 @@ void apc_php_free(void* p TSRMLS_DC)
 static opcode_handler_t *apc_original_opcode_handlers;
 static opcode_handler_t apc_opcode_handlers[APC_OPCODE_HANDLER_COUNT];
 
-#define APC_EX_T(offset)                    (*(temp_variable *)((char*)execute_data->Ts + offset))
+#ifdef ZEND_ENGINE_2_5
+#define APC_EX_CV(i) (*EX_CV_NUM(execute_data, i))
+#define APC_EX_T(offset) (*EX_TMP_VAR(execute_data, offset))
+#else
+#define APC_EX_CV(i) execute_data->CVs[i]
+#define APC_EX_T(offset) (*(temp_variable *)((char*)execute_data->Ts + offset))
+#endif
 
 #ifdef ZEND_ENGINE_2_4
 static zval *apc_get_zval_ptr(zend_uchar op_type, znode_op *node, zval **freeval, zend_execute_data *execute_data TSRMLS_DC)
@@ -64,7 +70,7 @@ static zval *apc_get_zval_ptr(zend_uchar op_type, znode_op *node, zval **freeval
             return (*freeval = &APC_EX_T(node->var).tmp_var);
         case IS_CV:
         {
-            zval ***ret = &execute_data->CVs[node->var];
+            zval ***ret = &APC_EX_CV(node->var);
 
             if (!*ret) {
                 zend_compiled_variable *cv = &EG(active_op_array)->vars[node->var];
@@ -96,7 +102,7 @@ static zval *apc_get_zval_ptr(znode *node, zval **freeval, zend_execute_data *ex
 #ifdef ZEND_ENGINE_2_1
         case IS_CV:
         {
-            zval ***ret = &execute_data->CVs[node->u.var];
+            zval ***ret = &APC_EX_CV(node->u.var);
 
             if (!*ret) {
                 zend_compiled_variable *cv = &EG(active_op_array)->vars[node->u.var];
@@ -124,7 +130,6 @@ static int ZEND_FASTCALL apc_op_ZEND_INCLUDE_OR_EVAL(ZEND_OPCODE_HANDLER_ARGS)
     php_stream_wrapper *wrapper;
     char *path_for_open, realpath_storage[MAXPATHLEN], *realpath;
     int ret = 0;
-    apc_opflags_t* flags = NULL;
     zend_file_handle file_handle;
     apc_cache_entry_t* cache_entry;
 

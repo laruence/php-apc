@@ -18,7 +18,7 @@
 
  */
 
-/* $Id: apc_bin.c 327151 2012-08-16 15:21:44Z laruence $ */
+/* $Id: apc_bin.c 328828 2012-12-18 15:18:39Z remi $ */
 
 /* Creates a binary architecture specific output to a string or file containing
  * the current cache contents for both fies and user variables.  This is accomplished
@@ -187,10 +187,10 @@ static void apc_swizzle_op_array(apc_bd_t *bd, zend_llist *ll, zend_op_array *op
     apc_swizzle_ptr(bd, ll, &op_array->refcount);
 #ifdef ZEND_ENGINE_2_4
     if (op_array->last_literal) {
-        int i = 0;
+        int j = 0;
         apc_swizzle_ptr(bd, ll, &(op_array->literals));
-        for (; i<op_array->last_literal; i++) {
-            apc_swizzle_zval(bd, ll, &((op_array->literals[i]).constant) TSRMLS_CC);
+        for (; j<op_array->last_literal; j++) {
+            apc_swizzle_zval(bd, ll, &((op_array->literals[j]).constant) TSRMLS_CC);
         }
     }
 #endif
@@ -502,8 +502,6 @@ static apc_bd_t* apc_swizzle_bd(apc_bd_t* bd, zend_llist *ll TSRMLS_DC) {
     PHP_MD5_CTX context;
     unsigned char digest[16];
     register php_uint32 crc;
-    php_uint32 crcinit = 0;
-    unsigned char *crc_p;
     void ***ptr;
     void ***ptr_list;
 
@@ -563,9 +561,7 @@ static int apc_unswizzle_bd(apc_bd_t *bd, int flags TSRMLS_DC) {
     unsigned char digest[16];
     PHP_MD5_CTX context;
     register php_uint32 crc;
-    php_uint32 crcinit = 0;
     php_uint32 crc_orig;
-    unsigned char *crc_p;
 
     /* Verify the md5 or crc32 before we unswizzle */
     memmove(md5_orig, bd->md5, 16);
@@ -788,6 +784,7 @@ apc_bd_t* apc_bin_dump(HashTable *files, HashTable *user_vars TSRMLS_DC) {
                 if(apc_bin_checkfilter(files, sp->key.data.fpfile.fullpath, sp->key.data.fpfile.fullpath_len+1)) {
                     ep = &bd->entries[count];
                     ep->type = sp->key.type;
+                    memmove(ep->file_md5, sp->key.md5, 16);
                     ep->val.file.filename = apc_bd_alloc(strlen(sp->value->data.file.filename) + 1 TSRMLS_CC);
                     strcpy(ep->val.file.filename, sp->value->data.file.filename);
                     ep->val.file.op_array = apc_copy_op_array(NULL, sp->value->data.file.op_array, &ctxt TSRMLS_CC);
@@ -981,6 +978,7 @@ int apc_bin_load(apc_bd_t *bd, int flags TSRMLS_DC) {
                 if (!apc_cache_make_file_key(&cache_key, ep->val.file.filename, PG(include_path), t TSRMLS_CC)) {
                     goto failure;
                 }
+                memmove(cache_key.md5, ep->file_md5, 16);
 
                 if ((ret = apc_cache_insert(apc_cache, cache_key, cache_entry, &ctxt, t TSRMLS_CC)) != 1) {
                     if(ret==-1) {
