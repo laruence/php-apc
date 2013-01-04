@@ -27,7 +27,7 @@
 
  */
 
-/* $Id: php_apc.h 327451 2012-09-03 18:22:15Z pajoye $ */
+/* $Id: php_apc.h 328953 2013-01-03 02:19:19Z rasmus $ */
 
 #ifndef PHP_APC_H
 #define PHP_APC_H
@@ -35,7 +35,7 @@
 #include "apc_php.h"
 #include "apc_globals.h"
 
-#define PHP_APC_VERSION "3.1.14-dev"
+#define PHP_APC_VERSION "3.1.15-dev"
 
 extern zend_module_entry apc_module_entry;
 #define apc_module_ptr &apc_module_entry

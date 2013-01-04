@@ -64,9 +64,9 @@
     <email>ab@php.net</email>
     <active>yes</active>
   </developer>
-  <date>2012-??-??</date>
+  <date>2013-??-??</date>
   <version>
-    <release>3.1.14-dev</release>
+    <release>3.1.15</release>
     <api>3.1.0</api>
   </version>
   <stability>
@@ -75,17 +75,10 @@
   </stability>
   <license uri="http://www.php.net/license">PHP License</license>
   <notes>
-   - Fixed bug #63434 (Segfault if apc.shm_strings_buffer excceed apc.shm_size) (Laruence)
-   - Fixed bug #63070 (apc.include_once_override bug) (Laruence)
-   - Fixed bug #62151 (Stat files only require read access only, windows). (Pierre)
-   - fix num. segfaults by revert rev. 326820 and issue reported in bug #62972
-   - Fixed bug #63491 file_md5 value was wrong when use apc_bin_load function (Anatoliy)
-   - Fixed PHP 5.5 compatibility (related to VM variables access fix) (Anatoliy)
-   - Added tests for bugs #63224, #63545, #63669 (Anatoliy)
+   - Fixed PHP 5.5 compatibility (related to traits refactoring) (Remi)
   </notes>
   <contents>
     <dir name="/">
-      <file role="doc" name="CHANGELOG"/>
       <file role="doc" name="INSTALL"/>
       <file role="doc" name="LICENSE"/>
       <file role="doc" name="NOTICE"/>
@@ -239,6 +232,30 @@
    -->
   </extsrcrelease>
   <changelog>
+    <release>
+      <date>2013-01-02</date>
+      <version>
+        <release>3.1.14</release>
+        <api>3.1.0</api>
+      </version>
+      <stability>
+        <release>beta</release>
+        <api>stable</api>
+      </stability>
+      <license uri="http://www.php.net/license">PHP License</license>
+      <notes>
+   - When include_once_override is on, use the cached realpath. See rev. 328172 
+     for a full explanation (Rasmus)
+   - Fixed bug #63852 (apc 3.1.13 fails to build if __APC_SMA_DEBUG__ is set) (Laruence)
+   - Fixed bug #63434 (Segfault if apc.shm_strings_buffer excceed apc.shm_size) (Laruence)
+   - Fixed bug #63070 (apc.include_once_override bug) (Laruence)
+   - Fixed bug #62151 (Stat files only require read access only, windows). (Pierre)
+   - fix num. segfaults by revert rev. 326820 and issue reported in bug #62972
+   - Fixed bug #63491 file_md5 value was wrong when use apc_bin_load function (Anatoliy)
+   - Fixed PHP 5.5 compatibility (related to VM variables access fix) (Anatoliy)
+   - Added tests for bugs #63224, #63545, #63669 (Anatoliy)
+      </notes>
+    </release>
     <release>
       <date>2012-09-03</date>
       <version>

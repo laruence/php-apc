@@ -25,7 +25,7 @@
 
  */
 
-/* $Id: apc_string.c 328241 2012-11-05 06:44:47Z laruence $ */
+/* $Id: apc_string.c 328965 2013-01-03 12:46:05Z remi $ */
 
 #include "apc.h"
 #include "apc_globals.h"
@@ -105,7 +105,7 @@ const char *apc_new_interned_string(const char *arKey, int nKeyLength TSRMLS_DC)
     APCSG(interned_strings_top) += ZEND_MM_ALIGNED_SIZE(sizeof(Bucket) + nKeyLength + 1);
 
     p->arKey = (char*)(p+1);
-    memcpy(p->arKey, arKey, nKeyLength);
+    memcpy((char*)p->arKey, arKey, nKeyLength);
     ((char *)p->arKey)[nKeyLength] = '\0';
     p->nKeyLength = nKeyLength;
     p->h = h;

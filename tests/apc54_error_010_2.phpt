@@ -23,7 +23,7 @@ trait b {
 }
 
 class bar {
-	use foo, c { c::test insteadof foo, b; }
+	use foo, c { c::test insteadof foo; }
 }
 
 \$x = new bar;
