@@ -28,7 +28,7 @@
 
  */
 
-/* $Id: apc_compile.c 328955 2013-01-03 07:07:45Z remi $ */
+/* $Id: apc_compile.c 329498 2013-02-18 23:14:39Z gopalv $ */
 
 #include "apc_compile.h"
 #include "apc_globals.h"
@@ -1207,8 +1207,9 @@ zend_op_array* apc_copy_op_array(zend_op_array* dst, zend_op_array* src, apc_con
     if (src->literals) {
         zend_literal *p, *q, *end;
 
+        CHECK(dst->literals = (zend_literal*) apc_pool_alloc(pool, (sizeof(zend_literal) * src->last_literal)));
+        p = dst->literals;
         q = src->literals;
-        p = dst->literals = (zend_literal*) apc_pool_alloc(pool, (sizeof(zend_literal) * src->last_literal));
         end = p + src->last_literal;
         while (p < end) {
             *p = *q;
@@ -1361,40 +1362,44 @@ zend_op_array* apc_copy_op_array(zend_op_array* dst, zend_op_array* src, apc_con
         /* This code breaks apc's rule#1 - cache what you compile */
         if((APCG(fpstat)==0) && APCG(canonicalize)) {
             /* not pool allocated, because the pool allocations eat up shm space */
-            fileinfo = (apc_fileinfo_t*) apc_php_malloc(sizeof(apc_fileinfo_t) TSRMLS_CC);
 #ifdef ZEND_ENGINE_2_4
             if((zo->opcode == ZEND_INCLUDE_OR_EVAL) && 
                 (zo->op1_type == IS_CONST && Z_TYPE_P(zo->op1.zv) == IS_STRING)) {
                 /* constant includes */
                 if(!IS_ABSOLUTE_PATH(Z_STRVAL_P(zo->op1.zv),Z_STRLEN_P(zo->op1.zv))) { 
+                    fileinfo = (apc_fileinfo_t*) apc_php_malloc(sizeof(apc_fileinfo_t) TSRMLS_CC);
                     if (apc_search_paths(Z_STRVAL_P(zo->op1.zv), PG(include_path), fileinfo TSRMLS_CC) == 0) {
 #else
             if((zo->opcode == ZEND_INCLUDE_OR_EVAL) && 
                 (zo->op1.op_type == IS_CONST && zo->op1.u.constant.type == IS_STRING)) {
                 /* constant includes */
                 if(!IS_ABSOLUTE_PATH(Z_STRVAL_P(&zo->op1.u.constant),Z_STRLEN_P(&zo->op1.u.constant))) { 
+                    fileinfo = (apc_fileinfo_t*) apc_php_malloc(sizeof(apc_fileinfo_t) TSRMLS_CC);
                     if (apc_search_paths(Z_STRVAL_P(&zo->op1.u.constant), PG(include_path), fileinfo TSRMLS_CC) == 0) {
 #endif
-                        if((fullpath = realpath(fileinfo->fullpath, canon_path))) {
+                        fullpath = realpath(fileinfo->fullpath, canon_path);
+                        apc_php_free(fileinfo TSRMLS_CC);
+                        if(fullpath) {
                             /* everything has to go through a realpath() */
                             zend_op *dzo = &(dst->opcodes[i]);
 #ifdef ZEND_ENGINE_2_4
-                            dzo->op1.literal = (zend_literal*) apc_pool_alloc(pool, sizeof(zend_literal));
+                            CHECK(dzo->op1.literal = (zend_literal*) apc_pool_alloc(pool, sizeof(zend_literal)));
                             Z_STRLEN_P(dzo->op1.zv) = strlen(fullpath);
-                            Z_STRVAL_P(dzo->op1.zv) = apc_pstrdup(fullpath, pool TSRMLS_CC);
+                            CHECK(Z_STRVAL_P(dzo->op1.zv) = apc_pstrdup(fullpath, pool TSRMLS_CC));
                             Z_TYPE_P(dzo->op1.zv) = IS_STRING;
                             Z_SET_REFCOUNT_P(dzo->op1.zv, 2);
                             Z_SET_ISREF_P(dzo->op1.zv);
                             dzo->op1.literal->hash_value = zend_hash_func(Z_STRVAL_P(dzo->op1.zv), Z_STRLEN_P(dzo->op1.zv)+1);
 #else
                             dzo->op1.u.constant.value.str.len = strlen(fullpath);
-                            dzo->op1.u.constant.value.str.val = apc_pstrdup(fullpath, pool TSRMLS_CC);
+                            CHECK(dzo->op1.u.constant.value.str.val = apc_pstrdup(fullpath, pool TSRMLS_CC));
 #endif
                         }
+                    } else {
+                        apc_php_free(fileinfo TSRMLS_CC);
                     }
                 }
             }
-            apc_php_free(fileinfo TSRMLS_CC);
         }
     }
 
@@ -1853,9 +1858,9 @@ zend_op_array* apc_copy_op_array_for_execution(zend_op_array* dst, zend_op_array
     memcpy(dst, src, sizeof(src[0]));
     dst->static_variables = my_copy_static_variables(src, ctxt TSRMLS_CC);
 
-    dst->refcount = apc_pmemcpy(src->refcount,
+    CHECK(dst->refcount = apc_pmemcpy(src->refcount,
                                       sizeof(src->refcount[0]),
-                                      ctxt->pool TSRMLS_CC);
+                                      ctxt->pool TSRMLS_CC));
 
     my_prepare_op_array_for_execution(dst,src, ctxt TSRMLS_CC);
 
@@ -1879,7 +1884,10 @@ zend_function* apc_copy_function_for_execution(zend_function* src, apc_context_t
 
     dst = (zend_function*) emalloc(sizeof(src[0]));
     memcpy(dst, src, sizeof(src[0]));
-    apc_copy_op_array_for_execution(&(dst->op_array), &(src->op_array), ctxt TSRMLS_CC);
+    if (apc_copy_op_array_for_execution(&(dst->op_array), &(src->op_array), ctxt TSRMLS_CC) == NULL) {
+        efree(dst);
+        return NULL;
+    }
     return dst;
 }
 /* }}} */
@@ -1913,6 +1921,7 @@ zend_class_entry* apc_copy_class_entry_for_execution(zend_class_entry* src, apc_
     int i;
 #endif
     zend_class_entry* dst = (zend_class_entry*) apc_pool_alloc(ctxt->pool, sizeof(src[0]));
+    CHECK(dst);
     memcpy(dst, src, sizeof(src[0]));
 
     if(src->num_interfaces)
@@ -1931,7 +1940,7 @@ zend_class_entry* apc_copy_class_entry_for_execution(zend_class_entry* src, apc_
     /* Deep-copy the class properties, because they will be modified */
 
 #ifdef ZEND_ENGINE_2_4
-    dst->name = apc_string_pmemcpy((char*)src->name, src->name_length+1, ctxt->pool TSRMLS_CC); 
+    CHECK(dst->name = apc_string_pmemcpy((char*)src->name, src->name_length+1, ctxt->pool TSRMLS_CC)); 
 	dst->default_properties_count = src->default_properties_count;
     if (src->default_properties_count) {
         dst->default_properties_table = (zval**) apc_php_malloc((sizeof(zval*) * src->default_properties_count) TSRMLS_CC);
@@ -2443,7 +2452,8 @@ apc_optimize_function_t apc_register_optimizer(apc_optimize_function_t optimizer
     }
 
 #define APC_COPY_TRAIT_METHOD_FOR_EXEC(dst, src) \
-    dst = (zend_trait_method_reference *) apc_pool_alloc(ctxt->pool, sizeof(zend_trait_method_reference)); \
+    CHECK(dst = \
+        (zend_trait_method_reference *) apc_pool_alloc(ctxt->pool, sizeof(zend_trait_method_reference))); \
     memcpy(dst, src, sizeof(zend_trait_method_reference)); \
     if (src->method_name) { \
         CHECK((dst->method_name = apc_pstrdup(src->method_name, ctxt->pool TSRMLS_CC))); \
@@ -2453,7 +2463,7 @@ apc_optimize_function_t apc_register_optimizer(apc_optimize_function_t optimizer
         CHECK((dst->class_name = apc_pstrdup(src->class_name, ctxt->pool TSRMLS_CC))); \
     } \
     if (src->ce) { \
-        dst->ce = apc_copy_class_entry_for_execution(src->ce, ctxt TSRMLS_CC); \
+        CHECK(dst->ce = apc_copy_class_entry_for_execution(src->ce, ctxt TSRMLS_CC)); \
     }
 
 /* {{{ apc_copy_trait_alias */
@@ -2485,6 +2495,7 @@ zend_trait_alias* apc_copy_trait_alias(zend_trait_alias *dst, zend_trait_alias *
 zend_trait_alias* apc_copy_trait_alias_for_execution(zend_trait_alias *src, apc_context_t *ctxt TSRMLS_DC)
 {
     zend_trait_alias *dst = (zend_trait_alias *) apc_pool_alloc(ctxt->pool, sizeof(zend_trait_alias));
+    CHECK(dst);
 
     memcpy(dst, src, sizeof(zend_trait_alias));
 
@@ -2525,7 +2536,7 @@ zend_trait_precedence* apc_copy_trait_precedence(zend_trait_precedence *dst, zen
         while (src->exclude_from_classes[i] && i < num_classes) {
             char *name = (char *) src->exclude_from_classes[i];
 
-            dst->exclude_from_classes[i] = (zend_class_entry *) apc_pstrdup(name, ctxt->pool TSRMLS_CC);
+            CHECK(dst->exclude_from_classes[i] = (zend_class_entry *) apc_pstrdup(name, ctxt->pool TSRMLS_CC));
             i++;
         }
         dst->exclude_from_classes[i] = NULL;
@@ -2541,6 +2552,7 @@ zend_trait_precedence* apc_copy_trait_precedence(zend_trait_precedence *dst, zen
 zend_trait_precedence* apc_copy_trait_precedence_for_execution(zend_trait_precedence *src, apc_context_t *ctxt TSRMLS_DC)
 {
     zend_trait_precedence *dst = (zend_trait_precedence *) apc_pool_alloc(ctxt->pool, sizeof(zend_trait_precedence));
+    CHECK(dst);
 
     memcpy(dst, src, sizeof(zend_trait_precedence));
 
@@ -2555,7 +2567,7 @@ zend_trait_precedence* apc_copy_trait_precedence_for_execution(zend_trait_preced
         while (src->exclude_from_classes[i] && i < num_classes) {
             char *name = (char *) src->exclude_from_classes[i];
 
-            dst->exclude_from_classes[i] = (zend_class_entry *) apc_pstrdup(name, ctxt->pool TSRMLS_CC);
+            CHECK(dst->exclude_from_classes[i] = (zend_class_entry *) apc_pstrdup(name, ctxt->pool TSRMLS_CC));
             i++;
         }
         dst->exclude_from_classes[i] = NULL;

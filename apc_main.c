@@ -28,7 +28,7 @@
 
  */
 
-/* $Id: apc_main.c 328826 2012-12-18 15:10:25Z remi $ */
+/* $Id: apc_main.c 329498 2013-02-18 23:14:39Z gopalv $ */
 
 #include "apc_php.h"
 #include "apc_main.h"
@@ -72,7 +72,10 @@ static zend_compile_t* set_compile_hook(zend_compile_t *ptr)
 static int install_function(apc_function_t fn, apc_context_t* ctxt, int lazy TSRMLS_DC)
 {
     int status;
-	zend_function *func = apc_copy_function_for_execution(fn.function, ctxt TSRMLS_CC);
+    zend_function *func = apc_copy_function_for_execution(fn.function, ctxt TSRMLS_CC);
+    if (func == NULL) {
+        return FAILURE;
+    }
 
     status = zend_hash_add(EG(function_table), fn.name, fn.name_len+1, func, sizeof(zend_function), NULL);
     efree(func);
@@ -97,6 +100,8 @@ int apc_lookup_function_hook(char *name, int len, ulong hash, zend_function **fe
 
     if(zend_hash_quick_find(APCG(lazy_function_table), name, len, hash, (void**)&fn) == SUCCESS) {
         *fe = apc_copy_function_for_execution(fn->function, &ctxt TSRMLS_CC);
+        if (fe == NULL)
+            return FAILURE;
         status = zend_hash_add(EG(function_table),
                                   fn->name,
                                   fn->name_len+1,
@@ -145,6 +150,8 @@ static int install_class(apc_class_t cl, apc_context_t* ctxt, int lazy TSRMLS_DC
 
     class_entry =
         apc_copy_class_entry_for_execution(cl.class_entry, ctxt TSRMLS_CC);
+    if (class_entry == NULL)
+        return FAILURE;
 
 
     /* restore parent class pointer for compile-time inheritance */
@@ -369,6 +376,7 @@ void apc_compiler_func_table_dtor_hook(void *pDest) {
         function_add_ref(func);
         zend_hash_next_index_insert(APCG(compiler_hook_func_table), func, sizeof(zend_function), NULL);
     } 
+    zend_function_dtor(func);
 }
 /* }}} */
 
@@ -381,6 +389,7 @@ void apc_compiler_class_table_dtor_hook(void *pDest) {
         ++(*pce)->refcount;
         zend_hash_next_index_insert(APCG(compiler_hook_class_table), pce, sizeof(zend_class_entry *), NULL);
     }
+    destroy_zend_class(pce);
 }
 /* }}} */
 

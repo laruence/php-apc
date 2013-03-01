@@ -25,7 +25,7 @@
 
  */
 
-/* $Id: apc_zend.c 328675 2012-12-05 10:59:38Z ab $ */
+/* $Id: apc_zend.c 329499 2013-02-18 23:29:38Z gopalv $ */
 
 #include "apc_zend.h"
 #include "apc_globals.h"
@@ -128,7 +128,7 @@ static int ZEND_FASTCALL apc_op_ZEND_INCLUDE_OR_EVAL(ZEND_OPCODE_HANDLER_ARGS)
     zval *freeop1 = NULL;
     zval *inc_filename = NULL, tmp_inc_filename;
     php_stream_wrapper *wrapper;
-    char *path_for_open, realpath_storage[MAXPATHLEN], *realpath;
+    char *path_for_open, realpath_storage[MAXPATHLEN], *real_path;
     int ret = 0;
     zend_file_handle file_handle;
     apc_cache_entry_t* cache_entry;
@@ -179,7 +179,7 @@ static int ZEND_FASTCALL apc_op_ZEND_INCLUDE_OR_EVAL(ZEND_OPCODE_HANDLER_ARGS)
     file_handle.handle.fp = NULL;
     cache_entry = apc_get_cache_entry(&file_handle TSRMLS_CC);
     if (cache_entry) {
-        realpath = cache_entry->data.file.filename;
+        real_path = cache_entry->data.file.filename;
     } else {
         if (!IS_ABSOLUTE_PATH(path_for_open, strlen(path_for_open)) || !VCWD_REALPATH(path_for_open, realpath_storage)) {
             /* Fallback to original handler */
@@ -188,10 +188,10 @@ static int ZEND_FASTCALL apc_op_ZEND_INCLUDE_OR_EVAL(ZEND_OPCODE_HANDLER_ARGS)
             }
             return apc_original_opcode_handlers[APC_OPCODE_HANDLER_DECODE(opline)](ZEND_OPCODE_HANDLER_ARGS_PASSTHRU);
         }
-        realpath = realpath_storage;
+        real_path = realpath_storage;
     }
 
-    if (zend_hash_exists(&EG(included_files), realpath, strlen(realpath) + 1)) {
+    if (zend_hash_exists(&EG(included_files), real_path, strlen(real_path) + 1)) {
 #ifdef ZEND_ENGINE_2_4
         if (!(opline->result_type & EXT_TYPE_UNUSED)) {
             ALLOC_INIT_ZVAL(APC_EX_T(opline->result.var).var.ptr);
