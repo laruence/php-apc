@@ -29,7 +29,7 @@
 
  */
 
-/* $Id: apc_globals.h 328290 2012-11-09 03:30:09Z laruence $ */
+/* $Id: apc_globals.h 329724 2013-03-10 15:57:06Z laruence $ */
 
 #ifndef APC_GLOBALS_H
 #define APC_GLOBALS_H
@@ -127,6 +127,7 @@ ZEND_BEGIN_MODULE_GLOBALS(apc)
     HashTable *compiler_hook_func_table;
     HashTable *compiler_hook_class_table;
     int compile_nesting;
+    zend_bool enable_opcode_cache;
 ZEND_END_MODULE_GLOBALS(apc)
 
 /* (the following declaration is defined in php_apc.c) */

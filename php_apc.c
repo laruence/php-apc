@@ -26,7 +26,7 @@
 
  */
 
-/* $Id: php_apc.c 328290 2012-11-09 03:30:09Z laruence $ */
+/* $Id: php_apc.c 329724 2013-03-10 15:57:06Z laruence $ */
 
 #include "apc_zend.h"
 #include "apc_cache.h"
@@ -112,6 +112,7 @@ static void php_apc_init_globals(zend_apc_globals* apc_globals TSRMLS_DC)
     apc_globals->compiler_hook_func_table = NULL;
     apc_globals->compiler_hook_class_table = NULL;
     apc_globals->compile_nesting = 0;
+    apc_globals->enable_opcode_cache = 1;
 }
 
 static void php_apc_shutdown_globals(zend_apc_globals* apc_globals TSRMLS_DC)
@@ -278,6 +279,7 @@ STD_PHP_INI_BOOLEAN("apc.use_request_time", "1", PHP_INI_ALL, OnUpdateBool, use_
 STD_PHP_INI_BOOLEAN("apc.lazy_functions", "0", PHP_INI_SYSTEM, OnUpdateBool, lazy_functions, zend_apc_globals, apc_globals)
 STD_PHP_INI_BOOLEAN("apc.lazy_classes", "0", PHP_INI_SYSTEM, OnUpdateBool, lazy_classes, zend_apc_globals, apc_globals)
 STD_PHP_INI_ENTRY("apc.serializer", "default", PHP_INI_SYSTEM, OnUpdateStringUnempty, serializer_name, zend_apc_globals, apc_globals)
+STD_PHP_INI_BOOLEAN("apc.enable_opcode_cache", "0", PHP_INI_SYSTEM, OnUpdateBool, enable_opcode_cache, zend_apc_globals, apc_globals)
 PHP_INI_END()
 
 /* }}} */
@@ -320,7 +322,7 @@ static PHP_MINFO_FUNCTION(apc)
         php_info_print_table_row(2, "Serialization Support", "broken");
     }
 
-    php_info_print_table_row(2, "Revision", "$Revision: 328290 $");
+    php_info_print_table_row(2, "Revision", "$Revision: 329724 $");
     php_info_print_table_row(2, "Build Date", __DATE__ " " __TIME__);
     php_info_print_table_end();
     DISPLAY_INI_ENTRIES();

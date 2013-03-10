@@ -28,7 +28,7 @@
 
  */
 
-/* $Id: apc_main.c 329498 2013-02-18 23:14:39Z gopalv $ */
+/* $Id: apc_main.c 329724 2013-03-10 15:57:06Z laruence $ */
 
 #include "apc_php.h"
 #include "apc_main.h"
@@ -907,8 +907,11 @@ int apc_module_init(int module_number TSRMLS_DC)
     apc_user_cache = apc_cache_create(APCG(user_entries_hint), APCG(gc_ttl), APCG(user_ttl) TSRMLS_CC);
 
     /* override compilation */
-    old_compile_file = zend_compile_file;
-    zend_compile_file = my_compile_file;
+    if (APCG(enable_opcode_cache)) {
+        old_compile_file = zend_compile_file;
+        zend_compile_file = my_compile_file;
+    }
+
     REGISTER_LONG_CONSTANT("\000apc_magic", (long)&set_compile_hook, CONST_PERSISTENT | CONST_CS);
     REGISTER_LONG_CONSTANT("\000apc_compile_file", (long)&my_compile_file, CONST_PERSISTENT | CONST_CS);
     REGISTER_LONG_CONSTANT(APC_SERIALIZER_CONSTANT, (long)&_apc_register_serializer, CONST_PERSISTENT | CONST_CS);
@@ -937,7 +940,10 @@ int apc_module_shutdown(TSRMLS_D)
         return 0;
 
     /* restore compilation */
-    zend_compile_file = old_compile_file;
+    /* override compilation */
+    if (APCG(enable_opcode_cache)) {
+        zend_compile_file = old_compile_file;
+    }
 
     /*
      * In case we got interrupted by a SIGTERM or something else during execution
